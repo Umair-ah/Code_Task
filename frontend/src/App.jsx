@@ -22,6 +22,8 @@ function App() {
   const tableCodeType = useRef(null)
   const [tableSelected, setTableSelected] = useState(false)
 
+  const [linkedCode, setLinkedCode] = useState([])
+
 
 
   useEffect(() => {
@@ -63,8 +65,10 @@ function App() {
   const handleDelete = async (index, row) => {
     try{
       const response = await axios.delete(`http://localhost:5000/api/code_data/delete/${row.code}`)
-      const updatedData = await axios.get("http://localhost:5000/api/code_data")
+      const updatedData = await axios.get(`http://localhost:5000/api/code_data/has_code_type?code_type=${row.code}`)
       setCodeData(updatedData.data)
+
+     
     } catch(error) {
       console.error("Error is this:", error);
     }
@@ -89,6 +93,20 @@ function App() {
     setEditingTypeValue({ ...editingTypeValue, [field]: e.target.value });
     console.log(editingTypeValue)
   };
+
+  const getLimitedLinkedCode = async() => {
+    try {
+      const resultLimitedLinkedType = await axios.get("http://localhost:5000/api/code_types/limited_linked_type")
+
+
+      console.log("resultLimitedLinkedType is",resultLimitedLinkedType.data)
+
+
+      setLinkedCode(resultLimitedLinkedType.data)
+    } catch (error) {
+      console.error(error.message)
+    }
+  }
 
   const handleSave = async (id) => {
     try {
@@ -214,6 +232,7 @@ function App() {
                       onChange={(e) => handleTypeChange(e, "linked_type")}
                     >
                       <option value={codeTypes.find((cT)=> cT.code_type == row.linked_type)?. code_type || ''}>{codeTypes.find((cT)=> cT.code_type == row.linked_type)?. description || ''}</option>
+                      <option value={null}></option>
                       {codeTypes.map((cT)=>(
                         <option value={cT.code_type}>{cT.description}</option>
                       ))}
@@ -243,9 +262,9 @@ function App() {
                     <button className="p-1 text-sky-500" onClick={() => handleTypeEdit(index, row)}>
                       <Pencil size={16} />
                     </button>
-                    <button className="p-1 text-red-500" onClick={() => handleTypeDelete(index, row)}>
+                    {/* <button className="p-1 text-red-500" onClick={() => handleTypeDelete(index, row)}>
                       <Trash size={16} />
-                    </button>
+                    </button> */}
                   </td>
                 </>
                 )
@@ -286,16 +305,22 @@ function App() {
                 {editingRow === index ? (
                   <>
                   <td className="border p-2">
-                  <input type="text" value={editValues.user_code} onChange={(e) => handleChange(e, "user_code")} className="border p-1 rounded w-full" />
+                    <input type="text" value={editValues.user_code} onChange={(e) => handleChange(e, "user_code")} className="border p-1 rounded w-full" />
                   </td>
                   <td className="border p-2">
-                  <input type="text" value={editValues.description} onChange={(e) => handleChange(e, "description")} className="border p-1 rounded w-full" />
+                    <input type="text" value={editValues.description} onChange={(e) => handleChange(e, "description")} className="border p-1 rounded w-full" />
                   </td>
                   <td className="border p-2">
-                  <input type="text" value={editValues.linked_code} onChange={(e) => handleChange(e, "linked_code")} className="border p-1 rounded w-full" />
+                    {/* <input type="text" value={editValues.linked_code} onChange={(e) => handleChange(e, "linked_code")} className="border p-1 rounded w-full" /> */}
                   </td>
                   <td className="border p-2">
-                  <input type="text" value={editValues.linked_desc} onChange={(e) => handleChange(e, "linked_desc")} className="border p-1 rounded w-full" />
+                    <select className="border p-2" onChange={(e) => handleChange(e, "linked_code")}>
+                      <option value="">Linked Code (optional)</option>
+                      {linkedCode.map((row)=>(
+                        <option value={row.linked_type}>{row.linked_type_description}</option>
+                      ))}
+                    </select>
+                    {/* <input type="text" value={editValues.linked_desc} onChange={(e) => handleChange(e, "linked_desc")} className="border p-1 rounded w-full" /> */}
                   </td>
                   
                   <td className="border p-2">
@@ -314,31 +339,43 @@ function App() {
                         </td>
                         
                         <td className="border p-2 flex gap-2">
-                        <button className="p-1 text-green-500" onClick={() => handleSave(row.code)}>
-                        <Check size={16} />
-                        </button>
-                        <button className="p-1 text-red-500" onClick={() => setEditingRow(null)}>
-                        <X size={16} />
-                        </button>
+                          <button className="p-1 text-green-500" onClick={() => handleSave(row.code)}>
+                            <Check size={16} />
+                          </button>
+                          <button className="p-1 text-red-500" onClick={() => setEditingRow(null)}>
+                            <X size={16} />
+                          </button>
                         </td>
                         </>
                       ) : (
                         
                         <>
-                        <td className="border p-2">{row.user_code}</td>
-                        <td className="border p-2">{row.description}</td>
-                        <td className="border p-2">{row.linked_code}</td>
-                        <td className="border p-2">{row.linked_desc}</td>
                         <td className="border p-2">
-                        {codeTypes.find((cT) => cT.code_type == row.sub_code_type)?. description || "N/A"}
+                          {row.user_code}
+                        </td>
+                        <td className="border p-2">
+                          {row.description}
+                        </td>
+                        <td className="border p-2">
+                          {row.linked_code}
+                        </td>
+                        <td className="border p-2">
+                          {codeTypes.find((cT) => cT.code_type == row.linked_code)?.description || "N/A"}
+                        </td>
+                        <td className="border p-2">
+                          {codeTypes.find((cT) => cT.code_type == row.sub_code_type)?. description || "N/A"}
                         </td>
                         <td className="border p-2 flex gap-2">
-                        <button className="p-1 text-sky-500" onClick={() => handleEdit(index, row)}>
-                        <Pencil size={16} />
-                        </button>
-                        <button className="p-1 text-red-500" onClick={() => handleDelete(index, row)}>
-                        <Trash size={16} />
-                        </button>
+                          <button className="p-1 text-sky-500" onClick={() => {
+                            handleEdit(index, row); 
+                            getLimitedLinkedCode();
+                          }}
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button className="p-1 text-red-500" onClick={() => handleDelete(index, row)}>
+                            <Trash size={16} />
+                          </button>
                         </td>
                         </>
                       )}

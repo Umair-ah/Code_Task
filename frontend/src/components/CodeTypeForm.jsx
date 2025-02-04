@@ -5,7 +5,8 @@ const CodeTypeForm = ({ fetchCodeTypes })=>{
 
   const [showAddForm, setShowAddForm] = useState(false)
   const [newCodeType, setNewCodeType] = useState({
-    description: ""
+    description: "",
+    linked_type: 0
   })
 
   const [codeTypes, setCodeTypes] = useState([])
@@ -31,6 +32,8 @@ const CodeTypeForm = ({ fetchCodeTypes })=>{
   const handleAddCode = async () => {
     try {
       await axios.post("http://localhost:5000/api/code_types/add", newCodeType);
+      const res = await axios.get("http://localhost:5000/api/code_types")
+      setCodeTypes(res.data)
      
       fetchCodeTypes();
       setShowAddForm(false);
@@ -61,6 +64,7 @@ const CodeTypeForm = ({ fetchCodeTypes })=>{
             {console.log(codeTypes)}
           <select 
             className="my-4 p-2"
+            onChange={(e) => setNewCodeType({ ...newCodeType, linked_type: e.target.value })}
           >
             <option value="">Select Linked Typed (Optional)</option>
             {codeTypes.map((cT)=>(

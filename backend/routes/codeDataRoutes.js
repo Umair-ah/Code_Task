@@ -14,6 +14,7 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/update/:id", async (req, res) => {
+  console.log(req.body)
   const { id } = req.params;
   const { user_code, description, linked_code, sub_code_type } = req.body;
 
@@ -60,17 +61,17 @@ router.delete("/delete/:id", async (req, res) => {
 
 router.post("/new", async(req, res)=>{
   console.log("body is", req.body)
-  const {user_code, code_type, description } = req.body;
+  const {user_code, code_type, description, linked_code, sub_code_type } = req.body;
 
   try{
     const query = `
       INSERT INTO rcm.code_data (code, user_code, code_type, description, cat_code, linked_code, sub_code_type, created_by, creation_date) 
       VALUES 
-      (nextval('rcm.code_data_code_seq'), $1, $2, $3, NULL, 321, NULL, 1, NOW())
+      (nextval('rcm.code_data_code_seq'), $1, $2, $3, NULL, $4, $5, 1, NOW())
       RETURNING *;
     `
 
-    const result = await pool.query(query, [user_code, code_type, description])
+    const result = await pool.query(query, [user_code, code_type, description, linked_code, sub_code_type])
     if (result.rowCount == 0){
       return res.status(404).json({ error: "Code not found" });
     }
