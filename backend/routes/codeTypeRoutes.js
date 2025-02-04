@@ -40,20 +40,22 @@ router.post("/add", async(req, res) => {
 
 router.post("/update/:id", async(req, res) => {
   const {id} = req.params
-  const {description} = req.body
+  const {description, linked_type} = req.body
 
-  console.log(id)
-  console.log(description)
+  console.log("id is:",id)
+  console.log("description is:", description)
+  console.log("linked_type is:", linked_type)
+
 
 
   try{
     const query = `
       UPDATE rcm.code_type
-      SET description = $1
-      WHERE code_type = $2
+      SET description = $1, linked_type = $2
+      WHERE code_type = $3
       RETURNING *;
     `
-  const result = await pool.query(query, [description, id]);
+  const result = await pool.query(query, [description, linked_type, id]);
 
   if (result.rows.length === 0) {
     return res.status(404).json({ error: "No record found with that ID" });

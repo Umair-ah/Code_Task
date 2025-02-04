@@ -83,6 +83,7 @@ function App() {
 
   const handleTypeChange = (e, field) => {
     setEditingTypeValue({ ...editingTypeValue, [field]: e.target.value });
+    console.log(editingTypeValue)
   };
 
   const handleSave = async (id) => {
@@ -147,12 +148,14 @@ function App() {
           </button>
         </div>
 
-        <CodeTypeForm onCodeTypeAdded = {fetchCodeTypes}/>
+        <CodeTypeForm fetchCodeTypes = {fetchCodeTypes} />
 
         <table className="w-full my-3">
           <thead className="text-sky-500">
             <tr>
               <th className="p-2 text-left">Type</th>
+              <th className="p-2 text-left">Description</th>
+              <th className="p-2 text-left">Linked Type</th>
             </tr>
           </thead>
           <tbody>
@@ -171,6 +174,18 @@ function App() {
                       onChange={(e) => {handleTypeChange(e, "description")}}
                     />
                   </td>
+
+                  <td className="border p-2">
+                    <select
+                      
+                      onChange={(e) => handleTypeChange(e, "linked_type")}
+                    >
+                      <option value={codeTypes.find((cT)=> cT.code_type == row.linked_type)?. code_type || ''}>{codeTypes.find((cT)=> cT.code_type == row.linked_type)?. description || ''}</option>
+                      {codeTypes.map((cT)=>(
+                        <option value={cT.code_type}>{cT.description}</option>
+                      ))}
+                    </select>
+                  </td>
                   <td className="p-2 flex gap-2">
                     <button className="p-1 text-green-500" onClick={() => handleTypeSave(row.code_type)}>
                       <Check size={16} />
@@ -182,11 +197,14 @@ function App() {
                 </>
                 ) : (
                 <>
-                  <td>
+                  <td className="border p-2">
                     {row.code_type}
                   </td>
-                  <td>
+                  <td className="border p-2">
                     {row.description}
+                  </td>
+                  <td className="border p-2">
+                    {codeTypes.find((cT)=> cT.code_type == row.linked_type)?. description || ""}
                   </td>
                   <td className="border p-2 flex gap-2">
                     <button className="p-1 text-sky-500" onClick={() => handleTypeEdit(index, row)}>
@@ -236,9 +254,22 @@ function App() {
                     <td className="border p-2">
                       <input type="text" value={editValues.linked_desc} onChange={(e) => handleChange(e, "linked_desc")} className="border p-1 rounded w-full" />
                     </td>
+                
                     <td className="border p-2">
-                      <input type="text" value={editValues.sub_code_type} onChange={(e) => handleChange(e, "sub_code_type")} className="border p-1 rounded w-full" />
+                      <select
+                        value={editValues.sub_code_type || ""}
+                        onChange={(e) => handleChange(e, "sub_code_type")}
+                        className="border p-1 rounded w-full"
+                      >
+                        <option value="">Select Code Type</option>
+                        {codeTypes.map((code) => (
+                          <option key={code.code_type} value={code.code_type}>
+                            {code.description}
+                          </option>
+                        ))}
+                      </select>
                     </td>
+
                     <td className="border p-2 flex gap-2">
                       <button className="p-1 text-green-500" onClick={() => handleSave(row.code)}>
                         <Check size={16} />
@@ -254,7 +285,9 @@ function App() {
                     <td className="border p-2">{row.description}</td>
                     <td className="border p-2">{row.linked_code}</td>
                     <td className="border p-2">{row.linked_desc}</td>
-                    <td className="border p-2">{row.sub_code_type}</td>
+                    <td className="border p-2">
+                      {codeTypes.find((cT) => cT.code_type == row.sub_code_type)?. description || "N/A"}
+                    </td>
                     <td className="border p-2 flex gap-2">
                       <button className="p-1 text-sky-500" onClick={() => handleEdit(index, row)}>
                         <Pencil size={16} />
