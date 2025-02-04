@@ -1,17 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
-const CodeDataForm = ({onCodeDataAdded}) => {
+const CodeDataForm = ({onCodeDataAdded, tableCodeType}) => {
 
   const [showForm, setShowForm] = useState(false)
   const [codeData, setCodeData] = useState({
     user_code: "",
+    code_type: null,
     description: ""
   })
 
+
   const handleCodeData = async ()=>{
     try{
-      await axios.post("http://localhost:5000/api/code_data/new", codeData)
+      await axios.post(`http://localhost:5000/api/code_data/new`, { ...codeData, code_type: tableCodeType})
       console.log("New code added successfully! Fetching updated data...");
       setShowForm(false)
       setCodeData({
@@ -39,6 +41,12 @@ const CodeDataForm = ({onCodeDataAdded}) => {
             className="border p-2 my-4"
             value = {codeData.user_code}
             onChange={(e) => {setCodeData({ ...codeData, user_code: e.target.value })}}
+          />
+
+          <input
+            type="hidden"
+            name="code_type"
+            value={tableCodeType}
           />
 
           <input

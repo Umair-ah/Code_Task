@@ -59,17 +59,18 @@ router.delete("/delete/:id", async (req, res) => {
 
 
 router.post("/new", async(req, res)=>{
-  const {user_code, description } = req.body;
+  console.log("body is", req.body)
+  const {user_code, code_type, description } = req.body;
 
   try{
     const query = `
       INSERT INTO rcm.code_data (code, user_code, code_type, description, cat_code, linked_code, sub_code_type, created_by, creation_date) 
       VALUES 
-      (nextval('rcm.code_data_code_seq'), $1, 335, $2, NULL, 321, NULL, 1, NOW())
+      (nextval('rcm.code_data_code_seq'), $1, $2, $3, NULL, 321, NULL, 1, NOW())
       RETURNING *;
     `
 
-    const result = await pool.query(query, [user_code, description])
+    const result = await pool.query(query, [user_code, code_type, description])
     if (result.rowCount == 0){
       return res.status(404).json({ error: "Code not found" });
     }
@@ -79,6 +80,27 @@ router.post("/new", async(req, res)=>{
     console.error("/new error is:", err)
   }
 })
+
+
+router.get("/has_code_type", async (req, res) => {
+  const code_type = req.query.code_type;
+  
+  try {
+    const query = `SELECT * FROM rcm.code_data WHERE code_type = $1;`;
+    const result = await pool.query(query, [code_type]);
+
+    if (result.rowCount === 0) {
+      res.json([])
+    } else {
+      res.json(result.rows);
+    }
+
+  } catch (error) {
+    console.error("/has_code_type error:", error); // Log the error to the console
+    return res.status(500).json({ error: "Internal Server Error" }); // Send a 500 response to the client
+  }
+});
+
 
 
 module.exports = router;
